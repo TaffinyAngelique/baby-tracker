@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>👶 New Moms Milestone Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --c1: #FF6B9D; --c2: #4D96FF; --c3: #C77DFF;
+  --c4: #F5A623; --c5: #FF5757; --c6: #6BCB77; --c7: #FF9A3C;
+  --l1: #FFF0F5; --l2: #EEF5FF; --l3: #F8F0FF;
+  --l4: #FFF8ED; --l5: #FFF0F0; --l6: #EDFFF0; --l7: #FFF5ED;
+  --bg: #FDF6FF; --shadow: 0 6px 24px rgba(0,0,0,0.09);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Nunito',sans-serif;background:var(--bg);min-height:100vh;
+  background-image:radial-gradient(circle at 15% 15%,rgba(255,107,157,.1) 0,transparent 50%),
+  radial-gradient(circle at 85% 85%,rgba(77,150,255,.1) 0,transparent 50%)}
+
+/* ── HEADER ── */
+.site-header{text-align:center;padding:28px 16px 0}
+.emoji-row{font-size:1.8rem;letter-spacing:6px;animation:bob 3s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+h1{font-family:'Fredoka One',cursive;font-size:clamp(1.8rem,5vw,3rem);
+  background:linear-gradient(135deg,var(--c1),var(--c4),var(--c2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.15}
+.sub{color:#aaa;font-size:.9rem;font-weight:700;margin-top:4px}
+
+/* ── SYNC BAR ── */
+.sync-bar{max-width:700px;margin:18px auto 0;background:#fff;border-radius:16px;
+  padding:14px 18px;box-shadow:var(--shadow);display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.sync-bar label{font-size:.8rem;font-weight:800;color:#888;white-space:nowrap}
+.sync-bar input{flex:1;min-width:160px;padding:7px 12px;border:2px solid #eee;border-radius:10px;
+  font-family:'Nunito',sans-serif;font-size:.85rem;font-weight:700;outline:none}
+.sync-bar input:focus{border-color:var(--c1)}
+.btn{font-family:'Fredoka One',cursive;font-size:.95rem;padding:8px 18px;border:none;
+  border-radius:10px;cursor:pointer;transition:transform .15s,opacity .15s;white-space:nowrap}
+.btn:hover{transform:scale(1.04)}
+.btn-pink{background:var(--c1);color:#fff}
+.btn-blue{background:var(--c2);color:#fff}
+.btn-grey{background:#f0f0f0;color:#888}
+.sync-status{font-size:.75rem;font-weight:800;padding:5px 12px;border-radius:20px;white-space:nowrap}
+.sync-ok{background:#edfff0;color:var(--c6)}
+.sync-err{background:#fff0f0;color:var(--c5)}
+.sync-info{background:#eef5ff;color:var(--c2)}
+
+/* ── TABS ── */
+.tabs{display:flex;justify-content:center;flex-wrap:wrap;gap:8px;margin:20px 12px 0}
+.tab{font-family:'Fredoka One',cursive;font-size:.95rem;padding:9px 20px;border:none;
+  border-radius:50px;cursor:pointer;background:#fff;color:#bbb;box-shadow:0 3px 10px rgba(0,0,0,.07);transition:all .2s}
+.tab.on{color:#fff;transform:scale(1.06);box-shadow:0 5px 18px rgba(0,0,0,.14)}
+.tab[data-t="overview"].on{background:linear-gradient(135deg,var(--c1),var(--c4))}
+.tab[data-t="milestones"].on{background:linear-gradient(135deg,var(--c6),var(--c2))}
+.tab[data-t="words"].on{background:linear-gradient(135deg,var(--c3),var(--c1))}
+.tab[data-t="birthdays"].on{background:linear-gradient(135deg,var(--c4),var(--c7))}
+.tab[data-t="memories"].on{background:linear-gradient(135deg,var(--c5),var(--c3))}
+
+/* ── PANELS ── */
+.panel{display:none;padding:20px 16px 40px;max-width:1200px;margin:0 auto}
+.panel.on{display:block;animation:fadeUp .3s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── CARDS ── */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:18px}
+.card{background:#fff;border-radius:22px;padding:22px;box-shadow:var(--shadow);
+  position:relative;overflow:hidden;transition:transform .2s}
+.card:hover{transform:translateY(-3px)}
+.card-stripe{position:absolute;top:0;left:0;right:0;height:5px}
+
+/* ── BABY HEADER ── */
+.baby-top{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.avatar{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-size:1.7rem;flex-shrink:0}
+.baby-name{font-family:'Fredoka One',cursive;font-size:1.2rem;color:#333;
+  border:none;background:transparent;width:100%;outline:none}
+.baby-name::placeholder{color:#ddd}
+.age-pill{font-size:.7rem;font-weight:800;padding:3px 10px;border-radius:20px;white-space:nowrap}
+
+/* ── MILESTONE GROUPS ── */
+.mo-group{margin-bottom:10px}
+.mo-head{border-radius:8px;padding:4px 10px;margin-bottom:4px}
+.mo-label{font-size:.65rem;font-weight:800;letter-spacing:1.2px;text-transform:uppercase}
+.ms-list{display:flex;flex-direction:column;gap:5px;padding:0 2px}
+.ms-item{display:flex;align-items:center;gap:9px;cursor:pointer}
+.ms-item input{display:none}
+.chk{width:20px;height:20px;border-radius:7px;border:2.5px solid #e0e0e0;
+  display:flex;align-items:center;justify-content:center;font-size:.7rem;color:#fff;
+  flex-shrink:0;transition:all .2s}
+.ms-item input:checked+.chk{border-color:transparent}
+.ms-lbl{font-size:.85rem;font-weight:700;color:#555;transition:color .2s}
+.ms-item input:checked~.ms-lbl{color:#ccc;text-decoration:line-through}
+
+/* ── PROGRESS ── */
+.prog-wrap{margin-top:12px}
+.prog-bg{background:#f0f0f0;border-radius:10px;height:7px;overflow:hidden}
+.prog-fill{height:100%;border-radius:10px;transition:width .4s}
+.prog-lbl{font-size:.7rem;font-weight:800;color:#ccc;text-align:right;margin-top:3px}
+
+/* ── WORDS ── */
+.word-row{display:flex;gap:8px;margin-bottom:10px}
+.word-inp{flex:1;padding:8px 12px;border:2px solid #eee;border-radius:11px;
+  font-family:'Nunito',sans-serif;font-size:.85rem;font-weight:700;color:#444;outline:none}
+.word-inp:focus{border-color:var(--c3)}
+.add-btn{padding:8px 14px;border:none;border-radius:11px;font-family:'Fredoka One',cursive;
+  font-size:1.1rem;cursor:pointer;color:#fff;transition:transform .15s}
+.add-btn:hover{transform:scale(1.12)}
+.tags{display:flex;flex-wrap:wrap;gap:6px;min-height:28px}
+.tag{padding:4px 12px;border-radius:20px;font-size:.78rem;font-weight:800;cursor:pointer;position:relative}
+.tag:hover::after{content:'✕';position:absolute;inset:0;display:flex;align-items:center;
+  justify-content:center;background:rgba(0,0,0,.18);border-radius:20px;font-size:.7rem}
+.no-words{font-size:.78rem;color:#ccc;font-style:italic;font-weight:600}
+
+/* ── BIRTHDAYS ── */
+.bday-setup{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px;margin-bottom:24px}
+.bday-card{background:#fff;border-radius:16px;padding:14px;box-shadow:var(--shadow)}
+.bday-name{font-family:'Fredoka One',cursive;font-size:.95rem;margin-bottom:3px}
+.bday-age{font-size:.72rem;font-weight:800;margin-bottom:8px}
+.date-inp{width:100%;padding:7px 10px;border:2px solid #eee;border-radius:10px;
+  font-family:'Nunito',sans-serif;font-size:.82rem;font-weight:700;color:#555;outline:none;text-align:center}
+.date-inp:focus{border-color:var(--c4)}
+.month-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.month-card{background:#fff;border-radius:16px;padding:14px;box-shadow:var(--shadow);text-align:center}
+.month-emo{font-size:1.5rem;margin-bottom:4px;display:block}
+.month-name{font-size:.7rem;font-weight:800;letter-spacing:1px;color:#bbb;margin-bottom:6px}
+.bday-chip{display:inline-block;padding:3px 10px;border-radius:20px;font-size:.75rem;font-weight:800;margin:2px}
+
+/* ── MEMORIES ── */
+.mem-ta{width:100%;border:2px solid #eee;border-radius:12px;padding:10px 12px;
+  font-family:'Nunito',sans-serif;font-size:.84rem;font-weight:600;color:#555;
+  resize:none;outline:none;min-height:80px;line-height:1.6;transition:border-color .2s}
+.mem-ta::placeholder{color:#ddd}
+.mem-ta:focus{border-color:var(--c3)}
+
+/* ── OVERVIEW TABLE ── */
+.ov-wrap{background:#fff;border-radius:20px;padding:18px;box-shadow:var(--shadow);overflow-x:auto}
+.ov-title{font-family:'Fredoka One',cursive;font-size:1.3rem;color:#444;text-align:center;margin-bottom:16px}
+table{width:100%;border-collapse:collapse}
+th{font-family:'Fredoka One',cursive;font-size:.82rem;padding:9px 12px;color:#bbb;
+  border-bottom:2px solid #f5f5f5;text-align:left}
+td{padding:11px 12px;font-size:.83rem;font-weight:700;color:#555;border-bottom:1px solid #f9f9f9;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+.ov-dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px}
+.mini-prog{height:5px;background:#f0f0f0;border-radius:10px;overflow:hidden;min-width:70px}
+.mini-fill{height:100%;border-radius:10px}
+
+/* ── SECTION TITLE ── */
+.sec-title{font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:#ccc;margin:12px 0 6px}
+
+/* ── SAVE NOTICE ── */
+.foot{text-align:center;margin-top:24px;font-size:.75rem;color:#ccc;font-weight:700}
+.foot span{background:#f5f5f5;padding:5px 14px;border-radius:20px}
+
+@media(max-width:600px){
+  .sync-bar{flex-direction:column;align-items:stretch}
+  .sync-bar input,.btn{width:100%}
+  .tabs{gap:5px}.tab{padding:7px 13px;font-size:.82rem}
+}
+</style>
+</head>
+<body>
+
+<div class="site-header">
+  <div class="emoji-row">🍼 👶 🌟 🎀 💛 🌈 🎉</div>
+  <h1>Our Little Ones</h1>
+  <p class="sub">New Moms Group · Milestone Tracker</p>
+</div>
+
+<!-- SYNC BAR -->
+<div class="sync-bar">
+  <label>🔗 Share Code:</label>
+  <input id="bin-id" placeholder="Paste your group code here..." />
+  <button class="btn btn-pink" onclick="loadCloud()">Load</button>
+  <button class="btn btn-blue" onclick="saveCloud()">Save & Share</button>
+  <button class="btn btn-grey" onclick="newGroup()">New Group</button>
+  <span class="sync-status sync-info" id="sync-status">Enter a group code or create a new group</span>
+</div>
+<div style="text-align:center;font-size:.72rem;color:#bbb;margin-top:6px;font-weight:700">
+  💡 One mom creates the group → shares the code in WhatsApp → everyone loads it and can edit
+</div>
+
+<div class="tabs">
+  <button class="tab on" data-t="overview">📊 Overview</button>
+  <button class="tab" data-t="milestones">🌟 Milestones</button>
+  <button class="tab" data-t="words">💬 First Words</button>
+  <button class="tab" data-t="birthdays">🎂 Birthdays</button>
+  <button class="tab" data-t="memories">📸 Memories</button>
+</div>
+
+<div class="panel on" id="p-overview">
+  <div class="ov-title">All Babies at a Glance ✨</div>
+  <div class="ov-wrap">
+    <table><thead><tr>
+      <th>Baby</th><th>Age</th><th>Progress</th><th>First Words</th><th>Birthday</th>
+    </tr></thead><tbody id="ov-body"></tbody></table>
+  </div>
+</div>
+
+<div class="panel" id="p-milestones">
+  <div class="grid" id="ms-grid"></div>
+</div>
+
+<div class="panel" id="p-words">
+  <div class="grid" id="wd-grid"></div>
+</div>
+
+<div class="panel" id="p-birthdays">
+  <div id="bday-inputs" class="bday-setup"></div>
+  <div class="month-grid" id="month-grid"></div>
+</div>
+
+<div class="panel" id="p-memories">
+  <div class="grid" id="mem-grid"></div>
+</div>
+
+<div class="foot"><span>💾 Click "Save & Share" to sync with your group</span></div>
+
+<script>
+// ── CONSTANTS ──
+const COLORS  = ['#FF6B9D','#4D96FF','#C77DFF','#F5A623','#FF5757','#6BCB77','#FF9A3C'];
+const LIGHTS  = ['#FFF0F5','#EEF5FF','#F8F0FF','#FFF8ED','#FFF0F0','#EDFFF0','#FFF5ED'];
+const AVTR    = ['👶','🍼','🌟','🎀','💛','🌈','🎉'];
+const MONTHS  = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const MO_EMO  = ['❄️','💝','🌱','🌸','🌞','🌊','🎉','⭐','🍂','🎃','🍁','🎄'];
+
+const MS_BY_MO = {
+  1:[{id:'smile',l:'😊 First smile'},{id:'focus',l:'👀 Focuses on faces'}],
+  2:[{id:'head',l:'💪 Holds head up'},{id:'coo',l:'🗣️ Cooing sounds'},{id:'track',l:'👁️ Tracks objects'}],
+  3:[{id:'sosm',l:'😁 Social smile'},{id:'push',l:'🤸 Mini push-up on tummy'}],
+  4:[{id:'roll',l:'🔄 Rolls over'},{id:'sitsup',l:'🪑 Sits with support'},{id:'grab',l:'✋ Grabs objects'},{id:'laugh',l:'😂 First laugh'}],
+  5:[{id:'reach',l:'🙌 Reaches for things'},{id:'razz',l:'😛 Blows raspberries'}],
+  6:[{id:'sitalone',l:'🧸 Sits alone'},{id:'solids',l:'🥣 Starts solid food'},{id:'babble',l:'🗣️ Babbles (ba, da, ma)'}],
+  7:[{id:'bearwt',l:'🦵 Bears weight on legs'},{id:'bounce',l:'🎉 Bounces when held'}],
+  8:[{id:'crawl',l:'🐣 Crawls'},{id:'pincer',l:'🤌 Pincer grip developing'}],
+  9:[{id:'wave',l:'👋 Waves bye-bye'},{id:'stand',l:'🦵 Pulls to stand'},{id:'peek',l:'🙈 Peek-a-boo'}],
+  10:[{id:'word1',l:'💬 First word!'},{id:'clap',l:'👏 Claps hands'}],
+  11:[{id:'cruise',l:'🚶 Cruises furniture'},{id:'cup',l:'🥤 Drinks from cup'}],
+  12:[{id:'walk',l:'🥿 First steps! 🎉'},{id:'point',l:'☝️ Points at things'},{id:'imitate',l:'🎭 Imitates actions'}],
+};
+const ALL_MS = Object.values(MS_BY_MO).flat();
+
+// ── STATE ──
+let state = {
+  babies: Array(7).fill(null).map((_,i)=>({
+    name:'', mumName:'', birthday:'', milestones:{}, words:[], memory:''
+  }))
+};
+
+// ── LOCAL SAVE ──
+function save(){ try{ localStorage.setItem('mmt-v2', JSON.stringify(state)); }catch(e){} }
+function loadLocal(){ try{ const s=localStorage.getItem('mmt-v2'); if(s) state=JSON.parse(s); }catch(e){} }
+
+// ── HELPERS ──
+function dname(i){ return state.babies[i].name || `Baby ${i+1}`; }
+
+function ageMonths(bday){
+  if(!bday) return null;
+  const d=new Date(bday); if(isNaN(d)) return null;
+  const n=new Date();
+  let m=(n.getFullYear()-d.getFullYear())*12+(n.getMonth()-d.getMonth());
+  if(n.getDate()<d.getDate()) m--;
+  return Math.max(0,m);
+}
+function ageLabel(bday){
+  const m=ageMonths(bday);
+  if(m===null) return '—';
+  if(m===0) return 'Newborn 🌸';
+  if(m===1) return '1 month old';
+  if(m<12) return `${m} months old`;
+  const y=Math.floor(m/12), r=m%12;
+  return r>0?`${y} yr ${r} mo`:`${y} yr${y>1?'s':''} old`;
+}
+
+function pct(i){
+  const chk=ALL_MS.filter(m=>state.babies[i].milestones[m.id]).length;
+  return Math.round(chk/ALL_MS.length*100);
+}
+
+// ── CLOUD SYNC via JSONBin ──
+const API = 'https://api.jsonbin.io/v3/b';
+const KEY = '$2a$10$XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'; // public free key placeholder
+
+async function newGroup(){
+  setStatus('Creating group...','info');
+  try{
+    const r = await fetch(API, {
+      method:'POST',
+      headers:{'Content-Type':'application/json','X-Bin-Private':'false'},
+      body: JSON.stringify({data: state, v:2})
+    });
+    const j = await r.json();
+    if(j.metadata?.id){
+      const id = j.metadata.id;
+      document.getElementById('bin-id').value = id;
+      localStorage.setItem('mmt-bin-id', id);
+      setStatus(`✅ Group created! Code: ${id}`, 'ok');
+      await navigator.clipboard.writeText(id).catch(()=>{});
+      alert(`✅ Your group code is:\n\n${id}\n\nShare this code in your WhatsApp group. Everyone should paste it and click "Load".`);
+    } else { setStatus('Error creating group','err'); }
+  }catch(e){ setStatus('Network error — try again','err'); }
+}
+
+async function saveCloud(){
+  const id = document.getElementById('bin-id').value.trim() || localStorage.getItem('mmt-bin-id');
+  if(!id){ alert('No group code found. Click "New Group" first!'); return; }
+  setStatus('Saving...','info');
+  try{
+    const r = await fetch(`${API}/${id}`, {
+      method:'PUT',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({data: state, v:2})
+    });
+    const j = await r.json();
+    if(j.metadata?.id){ setStatus('✅ Saved! All moms will see your updates','ok'); }
+    else { setStatus('Save failed — check code','err'); }
+  }catch(e){ setStatus('Network error — try again','err'); }
+}
+
+async function loadCloud(){
+  const id = document.getElementById('bin-id').value.trim();
+  if(!id){ alert('Please paste the group code first!'); return; }
+  setStatus('Loading...','info');
+  try{
+    const r = await fetch(`${API}/${id}/latest`);
+    const j = await r.json();
+    if(j.record?.data){
+      state = j.record.data;
+      localStorage.setItem('mmt-bin-id', id);
+      save();
+      renderAll();
+      setStatus('✅ Loaded! Data is up to date','ok');
+    } else { setStatus('Code not found — check and try again','err'); }
+  }catch(e){ setStatus('Network error — try again','err'); }
+}
+
+function setStatus(msg, type){
+  const el = document.getElementById('sync-status');
+  el.textContent = msg;
+  el.className = 'sync-status sync-'+type;
+}
+
+// ── OVERVIEW ──
+function buildOverview(){
+  const tb = document.getElementById('ov-body');
+  tb.innerHTML = state.babies.map((b,i)=>{
+    const p = pct(i);
+    const bd = b.birthday ? new Date(b.birthday).toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'}) : '—';
+    return `<tr>
+      <td><span class="ov-dot" style="background:${COLORS[i]}"></span>${AVTR[i]} ${dname(i)}</td>
+      <td style="color:${COLORS[i]};font-weight:800">${ageLabel(b.birthday)}</td>
+      <td><div class="mini-prog"><div class="mini-fill" style="width:${p}%;background:${COLORS[i]}"></div></div>
+        <span style="font-size:.68rem;color:#ccc">${p}%</span></td>
+      <td>${b.words.length ? b.words.slice(0,3).join(', ')+(b.words.length>3?'…':'') : '<span style="color:#ddd">—</span>'}</td>
+      <td>${bd}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ── MILESTONES ──
+function buildMilestones(){
+  const grid = document.getElementById('ms-grid');
+  grid.innerHTML = '';
+  state.babies.forEach((baby,i)=>{
+    const mo = ageMonths(baby.birthday);
+    const p = pct(i);
+    const card = document.createElement('div');
+    card.className = 'card';
+    const stripe = document.createElement('div');
+    stripe.className = 'card-stripe';
+    stripe.style.background = `linear-gradient(90deg,${COLORS[i]},${COLORS[(i+1)%7]})`;
+    card.appendChild(stripe);
+
+    const groups = Object.entries(MS_BY_MO).map(([m,items])=>({
+      m:+m, items,
+      isCur: mo!==null && +m===mo,
+      isPast: mo!==null && +m<mo
+    }));
+
+    card.innerHTML += `
+      <div class="baby-top">
+        <div class="avatar" style="background:${LIGHTS[i]}">${AVTR[i]}</div>
+        <div style="flex:1">
+          <input class="baby-name" placeholder="Baby's name" value="${baby.name}" data-i="${i}" />
+          <div style="font-size:.68rem;font-weight:800;margin-top:2px;color:${COLORS[i]}">${ageLabel(baby.birthday)}</div>
+        </div>
+        <div class="age-pill" style="background:${LIGHTS[i]};color:${COLORS[i]}">${ALL_MS.filter(m=>baby.milestones[m.id]).length}/${ALL_MS.length}</div>
+      </div>
+      ${groups.map(g=>`
+        <div class="mo-group">
+          <div class="mo-head" style="background:${g.isCur?COLORS[i]:g.isPast?'#f0f0f0':'#fafafa'}">
+            <span class="mo-label" style="color:${g.isCur?'#fff':g.isPast?'#aaa':'#ddd'}">
+              ${g.isCur?'📍 ':''}Month ${g.m}${g.isCur?' · Now':g.isPast?' ✓':''}
+            </span>
+          </div>
+          <div class="ms-list">
+            ${g.items.map(ms=>`
+              <label class="ms-item">
+                <input type="checkbox" data-i="${i}" data-id="${ms.id}" ${baby.milestones[ms.id]?'checked':''}>
+                <div class="chk" style="${baby.milestones[ms.id]?`background:${COLORS[i]};border-color:transparent`:''}">${baby.milestones[ms.id]?'✓':''}</div>
+                <span class="ms-lbl">${ms.l}</span>
+              </label>`).join('')}
+          </div>
+        </div>`).join('')}
+      <div class="prog-wrap">
+        <div class="prog-bg"><div class="prog-fill" style="width:${p}%;background:linear-gradient(90deg,${COLORS[i]},${COLORS[(i+2)%7]})"></div></div>
+        <div class="prog-lbl">${p}% complete</div>
+      </div>`;
+    grid.appendChild(card);
+  });
+
+  grid.querySelectorAll('.baby-name').forEach(inp=>{
+    inp.addEventListener('input',e=>{
+      state.babies[+e.target.dataset.i].name=e.target.value;
+      save(); buildOverview(); buildBirthdays(); buildWords(); buildMemories();
+    });
+  });
+  grid.querySelectorAll('input[type=checkbox]').forEach(cb=>{
+    cb.addEventListener('change',e=>{
+      const i=+e.target.dataset.i, id=e.target.dataset.id;
+      state.babies[i].milestones[id]=e.target.checked;
+      save(); buildMilestones(); buildOverview();
+    });
+  });
+}
+
+// ── WORDS ──
+function buildWords(){
+  const grid = document.getElementById('wd-grid');
+  grid.innerHTML = '';
+  state.babies.forEach((baby,i)=>{
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+      <div class="card-stripe" style="background:linear-gradient(90deg,${COLORS[i]},${COLORS[(i+2)%7]})"></div>
+      <div class="baby-top" style="margin-bottom:12px">
+        <div class="avatar" style="background:${LIGHTS[i]}">${AVTR[i]}</div>
+        <div>
+          <div style="font-family:'Fredoka One',cursive;font-size:1.1rem;color:#333">${dname(i)}</div>
+          <div style="font-size:.7rem;font-weight:800;color:${COLORS[i]}">${baby.words.length} word${baby.words.length!==1?'s':''}</div>
+        </div>
+      </div>
+      <div class="word-row">
+        <input class="word-inp" placeholder="Type a word & press +" id="wi-${i}">
+        <button class="add-btn" data-i="${i}" style="background:${COLORS[i]}">+</button>
+      </div>
+      <div class="tags" id="tags-${i}">
+        ${baby.words.length
+          ? baby.words.map((w,j)=>`<span class="tag" data-i="${i}" data-j="${j}" style="background:${LIGHTS[i]};color:${COLORS[i]}">${w}</span>`).join('')
+          : '<span class="no-words">No words yet... soon! 🌱</span>'}
+      </div>`;
+    grid.appendChild(card);
+  });
+
+  grid.querySelectorAll('.add-btn').forEach(btn=>{
+    btn.addEventListener('click',()=>addWord(+btn.dataset.i));
+  });
+  grid.querySelectorAll('.word-inp').forEach(inp=>{
+    inp.addEventListener('keydown',e=>{ if(e.key==='Enter') addWord(+inp.id.replace('wi-','')); });
+  });
+  grid.querySelectorAll('.tag').forEach(tag=>{
+    tag.addEventListener('click',()=>{
+      if(!confirm('Remove this word?')) return;
+      state.babies[+tag.dataset.i].words.splice(+tag.dataset.j,1);
+      save(); buildWords(); buildOverview();
+    });
+  });
+}
+function addWord(i){
+  const inp=document.getElementById(`wi-${i}`);
+  const w=inp.value.trim(); if(!w) return;
+  state.babies[i].words.push(w); inp.value='';
+  save(); buildWords(); buildOverview();
+}
+
+// ── BIRTHDAYS ──
+function buildBirthdays(){
+  const inp = document.getElementById('bday-inputs');
+  inp.innerHTML = state.babies.map((b,i)=>`
+    <div class="bday-card" style="border-top:4px solid ${COLORS[i]}">
+      <div class="bday-name" style="color:${COLORS[i]}">${AVTR[i]} ${dname(i)}</div>
+      <div class="bday-age" style="color:${COLORS[i]}">${ageLabel(b.birthday)}</div>
+      <input type="date" class="date-inp" data-i="${i}" value="${b.birthday}">
+    </div>`).join('');
+
+  inp.querySelectorAll('.date-inp').forEach(el=>{
+    el.addEventListener('change',e=>{
+      state.babies[+e.target.dataset.i].birthday=e.target.value;
+      save(); buildBirthdays(); buildOverview(); buildMilestones();
+    });
+  });
+
+  const mg = document.getElementById('month-grid');
+  mg.innerHTML = MONTHS.map((mo,mi)=>{
+    const babies = state.babies.map((b,i)=>({...b,i})).filter(b=>{
+      if(!b.birthday) return false;
+      const d=new Date(b.birthday);
+      return !isNaN(d)&&d.getMonth()===mi;
+    });
+    return `<div class="month-card">
+      <span class="month-emo">${MO_EMO[mi]}</span>
+      <div class="month-name">${mo.toUpperCase()}</div>
+      ${babies.length
+        ? babies.map(b=>`<span class="bday-chip" style="background:${LIGHTS[b.i]};color:${COLORS[b.i]}">${dname(b.i)}</span>`).join('')
+        : '<span style="font-size:.72rem;color:#ddd;font-weight:700">No birthdays</span>'}
+    </div>`;
+  }).join('');
+}
+
+// ── MEMORIES ──
+function buildMemories(){
+  const grid = document.getElementById('mem-grid');
+  grid.innerHTML = '';
+  state.babies.forEach((baby,i)=>{
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+      <div class="card-stripe" style="background:linear-gradient(90deg,${COLORS[i]},${COLORS[(i+3)%7]})"></div>
+      <div class="baby-top" style="margin-bottom:12px">
+        <div class="avatar" style="background:${LIGHTS[i]}">${AVTR[i]}</div>
+        <div style="font-family:'Fredoka One',cursive;font-size:1.1rem;color:#333">${dname(i)} 📸</div>
+      </div>
+      <textarea class="mem-ta" data-i="${i}" placeholder="Write a special memory, funny moment, or milestone note... 🌟">${baby.memory||''}</textarea>`;
+    grid.appendChild(card);
+  });
+  grid.querySelectorAll('.mem-ta').forEach(ta=>{
+    ta.addEventListener('input',e=>{ state.babies[+e.target.dataset.i].memory=e.target.value; save(); });
+  });
+}
+
+// ── TABS ──
+document.querySelectorAll('.tab').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
+    btn.classList.add('on');
+    document.getElementById('p-'+btn.dataset.t).classList.add('on');
+    if(btn.dataset.t==='milestones') buildMilestones();
+    if(btn.dataset.t==='words') buildWords();
+    if(btn.dataset.t==='birthdays') buildBirthdays();
+    if(btn.dataset.t==='memories') buildMemories();
+  });
+});
+
+function renderAll(){
+  buildOverview();
+  buildMilestones();
+  buildWords();
+  buildBirthdays();
+  buildMemories();
+}
+
+// ── INIT ──
+loadLocal();
+const savedId = localStorage.getItem('mmt-bin-id');
+if(savedId) document.getElementById('bin-id').value = savedId;
+buildOverview();
+
+// Auto-load if saved bin id exists
+if(savedId){ loadCloud(); }
+</script>
+</body>
+</html>
